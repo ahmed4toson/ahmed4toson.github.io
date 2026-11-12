@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ahmed Toson</title>
+<meta name="description" content="Software QA Engineer → AI for work. Testing AI before you trust it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+  :root {
+    --bg: #07071a;
+    --win: #0f0f2b;
+    --bar: #17173d;
+    --text: #e7e8ff;
+    --muted: #7d80b8;
+    --accent: #f5c518;
+    --green: #3ddc84;
+    --line: rgba(255,255,255,.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(800px 400px at 50% 0%, rgba(245,197,24,.08), transparent 70%),
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: auto, 32px 32px, 32px 32px;
+    color: var(--text);
+    font: 400 14px/1.7 "JetBrains Mono", ui-monospace, monospace;
+    display: flex; justify-content: center; align-items: flex-start;
+    padding: 40px 16px;
+  }
+  .window {
+    width: 100%; max-width: 520px;
+    background: var(--win);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 14px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(245,197,24,.06);
+    overflow: hidden;
+    animation: rise .6s cubic-bezier(.2,.8,.2,1) both;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(24px) scale(.98); } }
+  .bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 14px; background: var(--bar);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot:nth-child(1) { background: #ff5f57; } .dot:nth-child(2) { background: #febc2e; } .dot:nth-child(3) { background: #28c840; }
+  .bar .title { flex: 1; text-align: center; color: var(--muted); font-size: 12px; margin-right: 44px; }
+  .screen { position: relative; padding: 20px 18px 26px; min-height: 520px; }
+  .screen::after { /* scanlines */
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(transparent 0 2px, rgba(255,255,255,.015) 2px 3px);
+  }
+  .line { white-space: pre-wrap; word-break: break-word; }
+  .prompt { color: var(--green); }
+  .prompt b { color: var(--accent); font-weight: 500; }
+  .cmd { color: var(--text); }
+  .out { color: var(--muted); margin: 2px 0 14px; animation: fade .35s ease both; }
+  .out strong { color: var(--text); font-weight: 700; }
+  .out .hl { color: var(--accent); }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } }
+  .cursor { display: inline-block; width: 8px; height: 16px; background: var(--accent); vertical-align: -3px; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .ls { display: flex; flex-direction: column; gap: 6px; margin: 6px 0 14px; }
+  .ls a {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: 8px;
+    color: var(--text); text-decoration: none;
+    border: 1px solid transparent;
+    animation: fade .3s ease both;
+    transition: background .15s, border-color .15s;
+  }
+  .ls a:hover, .ls a:focus-visible { background: rgba(245,197,24,.08); border-color: rgba(245,197,24,.35); outline: none; }
+  .ls a i { width: 18px; text-align: center; color: var(--accent); }
+  .ls a .name { flex: 1; }
+  .ls a .name::after { content: "/"; color: var(--muted); }
+  .ls a .h { color: var(--muted); font-size: 12px; }
+  .ls a:hover .h { color: var(--accent); }
+
+  .skip {
+    position: fixed; right: 16px; bottom: 16px;
+    background: var(--bar); color: var(--muted);
+    border: 1px solid rgba(255,255,255,.12); border-radius: 999px;
+    font: 500 12px "JetBrains Mono", monospace; padding: 8px 14px; cursor: pointer;
+  }
+  .skip:hover { color: var(--accent); }
+  @media (max-width: 420px) { .ls a .h { display: none; } .screen { min-height: 460px; } }
+</style>
+</head>
+<body>
+<div class="window" role="main">
+  <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="title">ahmed@toson: ~</span></div>
+  <div class="screen" id="screen" aria-live="polite"></div>
+</div>
+<button class="skip" id="skip" type="button">skip ▸</button>
+
+<script>
+  // Edit links here.
+  const LINKS = [
+    { name: 'instagram', icon: 'fa-brands fa-instagram', handle: '@ahmed_toson_ai', url: 'https://www.instagram.com/ahmed_toson_ai/' },
+    { name: 'tiktok',    icon: 'fa-brands fa-tiktok',    handle: '@ahmed_toson_ai', url: 'https://www.tiktok.com/@ahmed_toson_ai' },
+    { name: 'youtube',   icon: 'fa-brands fa-youtube',   handle: '@AhmedToson-Ai',  url: 'https://www.youtube.com/@AhmedToson-Ai' },
+    { name: 'facebook',  icon: 'fa-brands fa-facebook',  handle: 'Ahmed Toson',     url: 'https://www.facebook.com/profile.php?id=61594294016274' },
+    { name: 'linkedin',  icon: 'fa-brands fa-linkedin',  handle: 'Ahmed Toson',     url: 'https://www.linkedin.com/in/ahmed-toson-b79ab0220' },
+  ];
+  const CODEPALS = { name: 'codepals', icon: 'fa-solid fa-code', handle: 'CodePals Academy', url: 'https://codepaslsai.com/' };
+
+  const linkHTML = l => `<a href="${l.url}" target="_blank" rel="noopener"><i class="${l.icon}"></i><span class="name">${l.name}</span><span class="h">${l.handle}</span></a>`;
+
+  const STEPS = [
+    { cmd: 'whoami', out: '<strong>Ahmed Toson</strong>\nSoftware QA Engineer <span class="hl">→</span> AI for work' },
+    { cmd: 'cat motto.txt', out: '<span class="hl">"Testing AI before you trust it."</span>' },
+    { cmd: 'ls ./links', list: LINKS },
+    { cmd: 'cat founder.txt', list: [CODEPALS] },
+  ];
+
+  const screen = document.getElementById('screen');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let fast = reduce;
+  const wait = ms => new Promise(r => setTimeout(r, fast ? 0 : ms));
+
+  function promptLine() {
+    const d = document.createElement('div');
+    d.className = 'line';
+    d.innerHTML = '<span class="prompt">ahmed<b>@</b>toson:~$</span> <span class="cmd"></span><span class="cursor"></span>';
+    screen.appendChild(d);
+    return d;
+  }
+
+  async function run() {
+    for (const s of STEPS) {
+      const line = promptLine();
+      const cmd = line.querySelector('.cmd');
+      await wait(350);
+      for (const ch of s.cmd) { cmd.textContent += ch; await wait(55 + Math.random() * 45); }
+      await wait(250);
+      line.querySelector('.cursor').remove();
+      if (s.out) {
+        const o = document.createElement('div'); o.className = 'out'; o.innerHTML = s.out; screen.appendChild(o);
+      } else {
+        const box = document.createElement('div'); box.className = 'ls'; screen.appendChild(box);
+        for (const l of s.list) { box.insertAdjacentHTML('beforeend', linkHTML(l)); await wait(140); }
+      }
+      await wait(300);
+    }
+    promptLine();
+    document.getElementById('skip').remove();
+  }
+
+  document.getElementById('skip').addEventListener('click', () => { fast = true; });
+  run();
+</script>
+</body>
+</html>
